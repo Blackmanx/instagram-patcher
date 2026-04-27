@@ -68,11 +68,9 @@ curl -sL "$CLI_DOWNLOAD_URL" -o "$CLI_FILE"
 
 OUTPUT_APK="instagram-patched.apk"
 
-echo "[*] Patching APK with 'Hide ads'..."
+echo "[*] Patching APK with default patches (includes Hide ads, Hide suggested content, etc.)..."
 java -jar "$CLI_FILE" patch \
     --patches "$PATCHES_FILE" \
-    --exclusive \
-    -e "Hide ads" \
     --out "$OUTPUT_APK" \
     "$INPUT_APK"
 
