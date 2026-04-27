@@ -1,0 +1,11 @@
+agent-docs/
+*.apk
+*.xapk
+*.mpp
+morphe-cli.jar
+apkeep
+build/
+.idea/
+.vscode/
+instagram-patched-temporary-files/
+instagram-patched.keystore

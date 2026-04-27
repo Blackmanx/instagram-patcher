@@ -1,0 +1,41 @@
+name: Patch Instagram
+
+on:
+  workflow_dispatch:
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Run Patcher
+        run: |
+          chmod +x patch.sh
+          ./patch.sh
+
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: release-${{ steps.date.outputs.date }}-${{ github.run_number }}
+          name: Instagram Patched (Hide ads) - ${{ steps.date.outputs.date }}
+          files: instagram-patched.apk
+          body: |
+            Patched Instagram APK using Morphe CLI.
+            Patches applied:
+            - Hide ads
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
