@@ -14,25 +14,30 @@ PATCHES_FILE=$(basename "$PATCHES_DOWNLOAD_URL")
 
 echo "[*] Fetching supported version from Piko's Constants.kt..."
 PIKO_CONSTANTS_URL="https://raw.githubusercontent.com/crimera/piko/main/patches/src/main/kotlin/app/crimera/patches/instagram/utils/Constants.kt"
-SUPPORTED_VERSION=$(curl -s "$PIKO_CONSTANTS_URL" | grep -oP 'version = "\K([^"]+)' | tail -n 1)
+echo "[*] Fetching supported versions from Piko's Constants.kt..."
+PIKO_CONSTANTS_URL="https://raw.githubusercontent.com/crimera/piko/main/patches/src/main/kotlin/app/crimera/patches/instagram/utils/Constants.kt"
+STABLE_VERSION=$(curl -s "$PIKO_CONSTANTS_URL" | grep -oP 'version = "\K([^"]+)' | head -n 1)
+ALPHA_VERSION=$(curl -s "$PIKO_CONSTANTS_URL" | grep -oP 'version = "\K([^"]+)' | tail -n 1)
 
 if [ -z "$PATCHES_DOWNLOAD_URL" ]; then
     echo "Error: Could not determine latest Piko patches download URL."
     exit 1
 fi
 
-if [ -z "$SUPPORTED_VERSION" ]; then
-    echo "Warning: Could not determine supported Instagram version from Constants.kt. apkeep will attempt to download the latest version."
-    TARGET_APP="com.instagram.android"
-else
-    echo "[*] Supported Instagram version found: $SUPPORTED_VERSION"
-    TARGET_APP="com.instagram.android@$SUPPORTED_VERSION"
-fi
-
 if [ -z "$INPUT_APK" ]; then
-    echo "[*] No input APK provided. Downloading $TARGET_APP from apk-pure using apkeep..."
-    ./apkeep -d apk-pure -a "$TARGET_APP" .
-    DOWNLOADED_FILE=$(ls com.instagram.android* | grep -E '\.(apk|xapk|apkm)$' | head -n 1)
+    # Clean up any old downloads
+    rm -f com.instagram.android* input.apkm
+
+    echo "[*] Trying to download Alpha version: $ALPHA_VERSION"
+    ./apkeep -d apk-pure -a "com.instagram.android@$ALPHA_VERSION" .
+    DOWNLOADED_FILE=$(ls com.instagram.android* 2>/dev/null | grep -E '\.(apk|xapk|apkm)$' | head -n 1 || true)
+    
+    if [ -z "$DOWNLOADED_FILE" ]; then
+        echo "[!] Alpha version not found on apk-pure. Falling back to Stable version: $STABLE_VERSION"
+        ./apkeep -d apk-pure -a "com.instagram.android@$STABLE_VERSION" .
+        DOWNLOADED_FILE=$(ls com.instagram.android* 2>/dev/null | grep -E '\.(apk|xapk|apkm)$' | head -n 1 || true)
+    fi
+
     if [ -z "$DOWNLOADED_FILE" ]; then
         echo "Error: Failed to download APK."
         exit 1
