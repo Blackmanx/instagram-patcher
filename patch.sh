@@ -30,10 +30,18 @@ fi
 if [ -z "$INPUT_APK" ]; then
     echo "[*] No input APK provided. Downloading $TARGET_APP from apk-pure using apkeep..."
     ./apkeep -d apk-pure -a "$TARGET_APP" .
-    INPUT_APK=$(ls com.instagram.android*.apk | head -n 1)
-    if [ -z "$INPUT_APK" ]; then
+    DOWNLOADED_FILE=$(ls com.instagram.android* | grep -E '\.(apk|xapk)$' | head -n 1)
+    if [ -z "$DOWNLOADED_FILE" ]; then
         echo "Error: Failed to download APK."
         exit 1
+    fi
+    
+    if [[ "$DOWNLOADED_FILE" == *.xapk ]]; then
+        echo "[*] Extracting base APK from XAPK..."
+        unzip -q "$DOWNLOADED_FILE" "com.instagram.android.apk" -d .
+        INPUT_APK="com.instagram.android.apk"
+    else
+        INPUT_APK="$DOWNLOADED_FILE"
     fi
 fi
 
