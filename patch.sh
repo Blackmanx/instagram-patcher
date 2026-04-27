@@ -72,9 +72,10 @@ curl -sL "$CLI_DOWNLOAD_URL" -o "$CLI_FILE"
 
 OUTPUT_APK="instagram-patched.apk"
 
-echo "[*] Patching APK with all Piko patches..."
+echo "[*] Patching APK with all Piko patches (except 'Improve image viewing')..."
 java -jar "$CLI_FILE" patch \
     --patches "$PATCHES_FILE" \
+    --disable "Improve image viewing" \
     --out "$OUTPUT_APK" \
     "$INPUT_APK"
 
