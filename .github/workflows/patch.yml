@@ -14,10 +14,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Fetch Latest Patches Version
+      - name: Fetch Latest Piko Patches Version
         id: version
         run: |
-          LATEST=$(curl -s https://api.github.com/repos/brosssh/morphe-patches/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")')
+          LATEST=$(curl -s https://api.github.com/repos/crimera/piko/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")')
           echo "tag=$LATEST" >> $GITHUB_OUTPUT
 
       - name: Check if Release Exists
@@ -50,12 +50,11 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.version.outputs.tag }}
-          name: Instagram Patched - Morphe ${{ steps.version.outputs.tag }}
+          name: Instagram Patched - Piko ${{ steps.version.outputs.tag }}
           files: instagram-patched.apk
           body: |
             Automatically patched Instagram APK.
-            Using Morphe Patches: ${{ steps.version.outputs.tag }}
-            Patches applied:
-            - Hide ads
+            Using Piko Patches: ${{ steps.version.outputs.tag }}
+            All default Piko patches applied.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

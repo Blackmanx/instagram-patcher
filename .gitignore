@@ -9,3 +9,4 @@ build/
 .vscode/
 instagram-patched-temporary-files/
 instagram-patched.keystore
+*.apkm
