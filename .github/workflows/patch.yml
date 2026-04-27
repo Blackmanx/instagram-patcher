@@ -2,6 +2,8 @@ name: Patch Instagram
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *' # Run every day at midnight UTC
 
 jobs:
   patch:
@@ -12,29 +14,47 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Fetch Latest Patches Version
+        id: version
+        run: |
+          LATEST=$(curl -s https://api.github.com/repos/brosssh/morphe-patches/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")')
+          echo "tag=$LATEST" >> $GITHUB_OUTPUT
+
+      - name: Check if Release Exists
+        id: check_release
+        run: |
+          if gh release view ${{ steps.version.outputs.tag }} > /dev/null 2>&1; then
+            echo "Release ${{ steps.version.outputs.tag }} already exists. Skipping."
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Set up JDK 17
+        if: steps.check_release.outputs.exists == 'false'
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
       - name: Run Patcher
+        if: steps.check_release.outputs.exists == 'false'
         run: |
           chmod +x patch.sh
           ./patch.sh
 
-      - name: Get current date
-        id: date
-        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-
       - name: Create Release
+        if: steps.check_release.outputs.exists == 'false'
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: release-${{ steps.date.outputs.date }}-${{ github.run_number }}
-          name: Instagram Patched (Hide ads) - ${{ steps.date.outputs.date }}
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Instagram Patched - Morphe ${{ steps.version.outputs.tag }}
           files: instagram-patched.apk
           body: |
-            Patched Instagram APK using Morphe CLI.
+            Automatically patched Instagram APK.
+            Using Morphe Patches: ${{ steps.version.outputs.tag }}
             Patches applied:
             - Hide ads
         env:
